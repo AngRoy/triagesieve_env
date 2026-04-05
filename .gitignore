@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Environment variables (contains API tokens)
+.env
+.env.*
+
+# Runtime outputs
+outputs/logs/*
+outputs/evals/*
+!outputs/logs/.gitkeep
+!outputs/evals/.gitkeep
+
+# Claude Code / AI assistant config (local only)
+.claude/
+CLAUDE.md
+
+# Ad-hoc test scripts (local development only)
+scripts/test_multi_model.py
+scripts/test_multi_model_pro.py
+
+# OS files
+.DS_Store
+Thumbs.db
