@@ -1,0 +1,298 @@
+{
+  "templates": [
+    {
+      "template_id": "req_order_id",
+      "name": "Request Order ID",
+      "description": "Ask customer to provide order or transaction ID for billing lookup.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["billing"],
+        "issue_subtypes": ["refund", "failed_charge"],
+        "close_reasons": null
+      },
+      "requested_fields": ["order_id"],
+      "reply_body_template": "Thank you for contacting support. To process your request, please provide your order ID: {{order_id}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_invoice_details",
+      "name": "Request Invoice Details",
+      "description": "Ask customer for invoice number and billing period to investigate invoice error.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["billing"],
+        "issue_subtypes": ["invoice_error"],
+        "close_reasons": null
+      },
+      "requested_fields": ["invoice_number", "billing_period"],
+      "reply_body_template": "To investigate the invoice discrepancy, please provide invoice number {{invoice_number}} and billing period {{billing_period}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_account_verification",
+      "name": "Request Account Verification",
+      "description": "Ask customer to verify account ownership via registered email or last four of payment method.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["account"],
+        "issue_subtypes": ["password_reset", "account_lockout"],
+        "close_reasons": null
+      },
+      "requested_fields": ["registered_email", "last_four_payment"],
+      "reply_body_template": "For security, please confirm your registered email {{registered_email}} and last four digits of payment method {{last_four_payment}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_sso_config",
+      "name": "Request SSO Configuration",
+      "description": "Ask customer for SSO provider name and tenant ID to debug SSO issue.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["account"],
+        "issue_subtypes": ["sso_issue"],
+        "close_reasons": null
+      },
+      "requested_fields": ["sso_provider", "tenant_id"],
+      "reply_body_template": "To troubleshoot your SSO issue, please provide the SSO provider name {{sso_provider}} and your tenant ID {{tenant_id}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_api_details",
+      "name": "Request API Error Details",
+      "description": "Ask for API endpoint, error code, and request ID to investigate technical issue.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["technical"],
+        "issue_subtypes": ["api_error", "integration_failure"],
+        "close_reasons": null
+      },
+      "requested_fields": ["api_endpoint", "error_code", "request_id"],
+      "reply_body_template": "Please provide the API endpoint {{api_endpoint}}, error code {{error_code}}, and request ID {{request_id}} so we can investigate.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_reproduction_steps",
+      "name": "Request Reproduction Steps",
+      "description": "Ask customer for steps to reproduce the reported bug.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["technical"],
+        "issue_subtypes": ["bug_report"],
+        "close_reasons": null
+      },
+      "requested_fields": ["reproduction_steps", "browser_or_client"],
+      "reply_body_template": "To reproduce the issue, please describe the steps: {{reproduction_steps}}. Also confirm your browser or client version: {{browser_or_client}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_security_details",
+      "name": "Request Security Incident Details",
+      "description": "Ask for IP address, timestamp, and affected account for security investigation.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["security"],
+        "issue_subtypes": ["suspicious_login", "exposure_risk", "abuse_report"],
+        "close_reasons": null
+      },
+      "requested_fields": ["ip_address", "incident_timestamp", "affected_account"],
+      "reply_body_template": "For our security investigation, please provide the IP address {{ip_address}}, incident timestamp {{incident_timestamp}}, and affected account {{affected_account}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "req_shipping_details",
+      "name": "Request Shipping Details",
+      "description": "Ask for tracking number and shipping address to investigate shipping issue.",
+      "category": "request_info",
+      "applies_to": {
+        "issue_families": ["shipping"],
+        "issue_subtypes": ["delay", "tracking_problem", "lost_package"],
+        "close_reasons": null
+      },
+      "requested_fields": ["tracking_number", "shipping_address"],
+      "reply_body_template": "To look into your shipping issue, please provide the tracking number {{tracking_number}} and shipping address {{shipping_address}}.",
+      "close_body_template": null
+    },
+    {
+      "template_id": "close_billing_resolved",
+      "name": "Billing Issue Resolved",
+      "description": "Close a resolved billing ticket (refund, invoice, or charge issue).",
+      "category": "close_resolved",
+      "applies_to": {
+        "issue_families": ["billing"],
+        "issue_subtypes": ["refund", "invoice_error", "failed_charge"],
+        "close_reasons": ["resolved"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Your billing issue has been resolved. If you have further questions, please open a new ticket."
+    },
+    {
+      "template_id": "close_technical_resolved",
+      "name": "Technical Issue Resolved",
+      "description": "Close a resolved technical ticket (bug, API, or integration issue).",
+      "category": "close_resolved",
+      "applies_to": {
+        "issue_families": ["technical"],
+        "issue_subtypes": ["bug_report", "api_error", "integration_failure"],
+        "close_reasons": ["resolved"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Your technical issue has been resolved. If the problem recurs, please open a new ticket with updated details."
+    },
+    {
+      "template_id": "close_account_resolved",
+      "name": "Account Issue Resolved",
+      "description": "Close a resolved account ticket (password, SSO, or lockout issue).",
+      "category": "close_resolved",
+      "applies_to": {
+        "issue_families": ["account"],
+        "issue_subtypes": ["password_reset", "sso_issue", "account_lockout"],
+        "close_reasons": ["resolved"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Your account issue has been resolved. For security, we recommend updating your credentials."
+    },
+    {
+      "template_id": "close_security_resolved",
+      "name": "Security Issue Resolved",
+      "description": "Close a resolved security ticket after investigation is complete.",
+      "category": "close_resolved",
+      "applies_to": {
+        "issue_families": ["security"],
+        "issue_subtypes": ["suspicious_login", "exposure_risk", "abuse_report"],
+        "close_reasons": ["resolved"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "The security investigation is complete and the issue has been resolved. Affected systems have been secured."
+    },
+    {
+      "template_id": "close_shipping_resolved",
+      "name": "Shipping Issue Resolved",
+      "description": "Close a resolved shipping ticket (delay, tracking, or lost package).",
+      "category": "close_resolved",
+      "applies_to": {
+        "issue_families": ["shipping"],
+        "issue_subtypes": ["delay", "tracking_problem", "lost_package"],
+        "close_reasons": ["resolved"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Your shipping issue has been resolved. You can track your updated shipment status using the provided tracking link."
+    },
+    {
+      "template_id": "close_spam",
+      "name": "Close Spam/Marketing",
+      "description": "Close a ticket identified as spam or unsolicited marketing.",
+      "category": "close_non_actionable",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["non_actionable"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed as non-actionable: spam or marketing content."
+    },
+    {
+      "template_id": "close_benign_expected",
+      "name": "Close Benign/Expected Behavior",
+      "description": "Close a ticket where the reported behavior is expected and requires no action.",
+      "category": "close_non_actionable",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["non_actionable"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed: the reported behavior is expected and requires no corrective action."
+    },
+    {
+      "template_id": "close_false_positive",
+      "name": "Close Automation False Positive",
+      "description": "Close a ticket generated by a false positive from automated monitoring.",
+      "category": "close_non_actionable",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["non_actionable"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed: automated alert was a false positive. No action required."
+    },
+    {
+      "template_id": "close_data_error",
+      "name": "Close Data Error",
+      "description": "Close a ticket caused by a data error in ticket generation.",
+      "category": "close_non_actionable",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["non_actionable"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed: generated from a data error. No customer action needed."
+    },
+    {
+      "template_id": "close_no_response_needed",
+      "name": "Close No Response Needed",
+      "description": "Close a ticket that is informational and requires no response.",
+      "category": "close_non_actionable",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["non_actionable"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed: informational only, no response required."
+    },
+    {
+      "template_id": "close_duplicate",
+      "name": "Close Duplicate",
+      "description": "Close a ticket that is a duplicate of an existing ticket.",
+      "category": "close_duplicate",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["duplicate"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed as duplicate. This issue is being tracked in the original ticket."
+    },
+    {
+      "template_id": "close_feature_request",
+      "name": "Close Feature Request",
+      "description": "Close a ticket that is a feature request misfiled as a support issue.",
+      "category": "close_feature_request",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["feature_request"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Thank you for the suggestion. This has been forwarded to our product team as a feature request."
+    },
+    {
+      "template_id": "close_no_response",
+      "name": "Close No Response",
+      "description": "Close a ticket due to no customer response within SLA window.",
+      "category": "close_no_response",
+      "applies_to": {
+        "issue_families": ["*"],
+        "issue_subtypes": ["*"],
+        "close_reasons": ["no_response"]
+      },
+      "requested_fields": null,
+      "reply_body_template": null,
+      "close_body_template": "Ticket closed due to no response. Please reopen if you still need assistance."
+    }
+  ]
+}

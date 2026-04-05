@@ -1,0 +1,58 @@
+{
+  "queues": {
+    "billing_team": {
+      "description": "General billing inquiries including invoice errors and failed charges.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": ["billing"]
+    },
+    "tech_support_l1": {
+      "description": "First-level technical support for bug reports, API errors, and integration issues.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": ["technical"]
+    },
+    "tech_support_l2": {
+      "description": "Escalation-level technical support for complex or org-wide technical issues.",
+      "gated": true,
+      "prerequisites": ["classification_set", "impact_urgency_set"],
+      "handles_families": ["technical"]
+    },
+    "account_team": {
+      "description": "Account management including password resets, SSO issues, and account lockouts.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": ["account"]
+    },
+    "security_team": {
+      "description": "Security incidents including suspicious logins, exposure risks, and abuse reports.",
+      "gated": true,
+      "prerequisites": ["classification_set", "impact_urgency_set"],
+      "handles_families": ["security"]
+    },
+    "shipping_team": {
+      "description": "Shipping and logistics including delays, tracking problems, and lost packages.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": ["shipping"]
+    },
+    "refund_team": {
+      "description": "Dedicated refund processing for approved billing refund requests.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": ["billing"]
+    },
+    "spam_filter": {
+      "description": "Catch-all for non-actionable tickets: spam, marketing, false positives, and data errors.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": []
+    },
+    "sales_or_feature_requests": {
+      "description": "Feature requests and sales inquiries misfiled as support tickets.",
+      "gated": false,
+      "prerequisites": [],
+      "handles_families": []
+    }
+  }
+}

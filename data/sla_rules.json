@@ -1,0 +1,6 @@
+[
+  { "tier": "free",       "response_deadline_minutes": 1440, "resolution_deadline_minutes": 4320 },
+  { "tier": "pro",        "response_deadline_minutes": 480,  "resolution_deadline_minutes": 2880 },
+  { "tier": "enterprise", "response_deadline_minutes": 60,   "resolution_deadline_minutes": 480  },
+  { "tier": "internal",   "response_deadline_minutes": 240,  "resolution_deadline_minutes": 1440 }
+]

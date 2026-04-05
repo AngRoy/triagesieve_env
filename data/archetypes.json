@@ -1,0 +1,1315 @@
+{
+  "schema_version": "1.0",
+  "archetypes": [
+    {
+      "archetype_id": "refund_missing_order_id",
+      "display_name": "Refund Request — Missing Order ID",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "Refund request for {product_name}",
+        "body_pattern": "Hi, I need a refund for my recent purchase of {product_name}. I was charged ${charge_amount} on {charge_date} but the product {refund_reason}. Please process this refund as soon as possible. Thanks, {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi, I need a refund for my recent purchase of {product_name}. I was charged ${charge_amount} on {charge_date} but the product {refund_reason}. Please process this refund as soon as possible. Thanks, {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": []
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "billing",
+        "issue_subtype": "refund",
+        "product_area": "billing_portal",
+        "impact": "single_user",
+        "urgency": "medium",
+        "required_queue": "refund_team",
+        "required_missing_fields": ["order_id"],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_order_id", "close_billing_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "refund_missing_order_id",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_billing_refund", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "check_order_id", "checkpoint": false},
+          {"id": "request_info_order_id", "checkpoint": true},
+          {"id": "receive_reply", "checkpoint": false},
+          {"id": "route_refund_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_billing_refund", "guard": null},
+          {"from": "classify_billing_refund", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "check_order_id", "guard": null},
+          {"from": "check_order_id", "to": "request_info_order_id", "guard": "missing_order_id"},
+          {"from": "request_info_order_id", "to": "receive_reply", "guard": null},
+          {"from": "receive_reply", "to": "route_refund_team", "guard": "info_received"},
+          {"from": "route_refund_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "order_id": ["ORD-20260315-001", "ORD-20260320-042", "ORD-20260325-017", "ORD-20260401-088", "ORD-20260310-005"],
+        "product_name": ["Cloud Pro Plan", "Enterprise Suite", "API Access Bundle", "Data Storage Addon", "Analytics Dashboard"],
+        "charge_amount": ["49.99", "99.00", "199.99", "29.95", "149.00"],
+        "charge_date": ["2026-03-15", "2026-03-20", "2026-03-25", "2026-04-01", "2026-03-10"],
+        "refund_reason": ["did not work as expected", "was never delivered", "was charged twice", "does not match the description", "has a known defect"],
+        "customer_name": ["Alice Johnson", "Bob Martinez", "Carol Wang", "David Kim", "Eve Patel"],
+        "customer_name_lower": ["alice.johnson", "bob.martinez", "carol.wang", "david.kim", "eve.patel"],
+        "email_domain": ["example.com", "corpmail.net", "techfirm.io", "startup.co", "enterprise.org"]
+      }
+    },
+    {
+      "archetype_id": "failed_invoice_charge_dispute",
+      "display_name": "Failed Invoice / Charge Dispute",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "Invoice #{invoice_number} — charge dispute",
+        "body_pattern": "Hello Support, I noticed an incorrect charge on invoice #{invoice_number} for the billing period {billing_period}. The amount of ${disputed_amount} does not match our agreement. Our account is under {company_name}. Please review and correct this. Regards, {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": ["invoice_{invoice_number}.pdf"],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hello Support, I noticed an incorrect charge on invoice #{invoice_number} for the billing period {billing_period}. The amount of ${disputed_amount} does not match our agreement. Our account is under {company_name}. Please review and correct this. Regards, {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Customer has active {plan_type} subscription. Invoice {invoice_number} attached."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "billing",
+        "issue_subtype": "invoice_error",
+        "product_area": "billing_portal",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "billing_team",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_billing_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "failed_invoice_charge_dispute",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_billing_invoice", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "route_billing_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_billing_invoice", "guard": null},
+          {"from": "classify_billing_invoice", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "route_billing_team", "guard": null},
+          {"from": "route_billing_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "invoice_number": ["INV-20260301", "INV-20260215", "INV-20260401", "INV-20260115", "INV-20260320"],
+        "billing_period": ["March 2026", "February 2026", "Q1 2026", "January 2026", "April 2026"],
+        "disputed_amount": ["250.00", "1200.00", "499.99", "75.00", "3500.00"],
+        "company_name": ["Acme Corp", "TechStart Inc", "Globex Ltd", "Initech Solutions", "Umbrella Co"],
+        "customer_name": ["Frank Lee", "Grace Chen", "Hiro Tanaka", "Irene Novak", "James Wright"],
+        "customer_name_lower": ["frank.lee", "grace.chen", "hiro.tanaka", "irene.novak", "james.wright"],
+        "email_domain": ["acmecorp.com", "techstart.io", "globex.co.uk", "initech.com", "umbrella.net"],
+        "plan_type": ["Pro", "Business", "Enterprise", "Starter", "Growth"]
+      }
+    },
+    {
+      "archetype_id": "password_reset_account_lockout",
+      "display_name": "Password Reset / Account Lockout",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "URGENT: Account locked — cannot access {service_name}",
+        "body_pattern": "Hi, my account has been locked after {lockout_reason}. I need to regain access urgently as I have {business_justification}. Please help. — {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi, my account has been locked after {lockout_reason}. I need to regain access urgently as I have {business_justification}. Please help. — {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Account flagged as locked in auth system. Verification required before unlock."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "account",
+        "issue_subtype": "account_lockout",
+        "product_area": "auth_system",
+        "impact": "single_user",
+        "urgency": "high",
+        "required_queue": "account_team",
+        "required_missing_fields": ["registered_email", "last_four_payment"],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_account_verification", "close_account_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "password_reset_account_lockout",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_account_lockout", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_account_verification", "checkpoint": true},
+          {"id": "receive_verification", "checkpoint": false},
+          {"id": "route_account_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_account_lockout", "guard": null},
+          {"from": "classify_account_lockout", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_account_verification", "guard": "missing_verification"},
+          {"from": "request_account_verification", "to": "receive_verification", "guard": null},
+          {"from": "receive_verification", "to": "route_account_team", "guard": "info_received"},
+          {"from": "route_account_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "registered_email": ["karen.singh@example.com", "leo.fernandez@corpmail.net", "maya.thompson@techfirm.io", "nick.okafor@startup.co", "olivia.berg@enterprise.org"],
+        "last_four_payment": ["4242", "1234", "5678", "9012", "3456"],
+        "service_name": ["Dashboard", "Admin Portal", "API Console", "Analytics Hub", "Developer Studio"],
+        "lockout_reason": ["multiple failed login attempts", "a password expiry", "a suspicious activity flag", "an MFA device reset", "a security policy change"],
+        "business_justification": ["a client demo in 2 hours", "a production deploy pending", "quarterly reports due today", "a board meeting tomorrow", "an audit deadline this week"],
+        "customer_name": ["Karen Singh", "Leo Fernandez", "Maya Thompson", "Nick Okafor", "Olivia Berg"],
+        "customer_name_lower": ["karen.singh", "leo.fernandez", "maya.thompson", "nick.okafor", "olivia.berg"],
+        "email_domain": ["example.com", "corpmail.net", "techfirm.io", "startup.co", "enterprise.org"]
+      }
+    },
+    {
+      "archetype_id": "sso_login_issue",
+      "display_name": "SSO Login Issue",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "SSO login failing for {sso_provider} integration",
+        "body_pattern": "We are unable to log in via SSO using {sso_provider}. Our tenant ID is {tenant_id}. The error message says \"{error_message}\". This started happening {onset_description}. Can you investigate? — {customer_name}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "We are unable to log in via SSO using {sso_provider}. Our tenant ID is {tenant_id}. The error message says \"{error_message}\". This started happening {onset_description}. Can you investigate? — {customer_name}, {company_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Tenant {tenant_id} uses {sso_provider} SSO. Config last verified {config_date}."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "account",
+        "issue_subtype": "sso_issue",
+        "product_area": "auth_system",
+        "impact": "team",
+        "urgency": "medium",
+        "required_queue": "account_team",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_account_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "sso_login_issue",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_account_sso", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "route_account_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_account_sso", "guard": null},
+          {"from": "classify_account_sso", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "route_account_team", "guard": null},
+          {"from": "route_account_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "sso_provider": ["Okta", "Azure AD", "Google Workspace", "OneLogin", "Auth0"],
+        "tenant_id": ["tenant-abc123", "tenant-xyz789", "tenant-def456", "tenant-ghi012", "tenant-jkl345"],
+        "error_message": ["SAML assertion invalid", "Identity provider unreachable", "Token expired during handshake", "Attribute mapping mismatch", "Certificate validation failed"],
+        "onset_description": ["after our IdP certificate rotation yesterday", "this morning without any changes on our side", "after we upgraded to the new SSO connector", "intermittently over the past week", "right after our IT team updated firewall rules"],
+        "customer_name": ["Pat Rivera", "Quinn Zhang", "Rosa Andersson", "Sam Dubois", "Tanya Kuznetsova"],
+        "customer_name_lower": ["pat.rivera", "quinn.zhang", "rosa.andersson", "sam.dubois", "tanya.kuznetsova"],
+        "email_domain": ["bigcorp.com", "fintech.io", "healthsys.org", "retailco.net", "edtech.edu"],
+        "company_name": ["BigCorp", "FinTech Inc", "HealthSys", "RetailCo", "EdTech Academy"],
+        "config_date": ["2026-02-15", "2026-01-30", "2026-03-01", "2025-12-20", "2026-03-10"]
+      }
+    },
+    {
+      "archetype_id": "api_key_failure",
+      "display_name": "API Key / Endpoint Failure",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "API integration failing — need help",
+        "body_pattern": "Our integration with your API has been failing since {onset_description}. We are on the {plan_type} plan. This is blocking {business_impact}. Can you help us debug this? — {customer_name}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Our integration with your API has been failing since {onset_description}. We are on the {plan_type} plan. This is blocking {business_impact}. Can you help us debug this? — {customer_name}, {company_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Customer on {plan_type} plan. API key active. No recent outages reported."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "api_error",
+        "product_area": "api_platform",
+        "impact": "single_user",
+        "urgency": "high",
+        "required_queue": "tech_support_l1",
+        "required_missing_fields": ["api_endpoint", "error_code", "request_id"],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_api_details", "close_technical_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "api_key_failure",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_technical_api", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_api_details", "checkpoint": true},
+          {"id": "receive_api_details", "checkpoint": false},
+          {"id": "route_tech_l1", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_technical_api", "guard": null},
+          {"from": "classify_technical_api", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_api_details", "guard": "missing_api_details"},
+          {"from": "request_api_details", "to": "receive_api_details", "guard": null},
+          {"from": "receive_api_details", "to": "route_tech_l1", "guard": "info_received"},
+          {"from": "route_tech_l1", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "api_endpoint": ["/v2/users", "/v2/billing", "/v1/analytics", "/v2/webhooks", "/v2/exports"],
+        "error_code": ["401", "403", "429", "500", "503"],
+        "request_id": ["req-a1b2c3", "req-d4e5f6", "req-g7h8i9", "req-j0k1l2", "req-m3n4o5"],
+        "onset_description": ["after we rotated our API keys", "this morning without any changes", "intermittently over the last 3 days", "after upgrading to your new SDK version", "following our DNS migration"],
+        "plan_type": ["Pro", "Business", "Growth", "Starter", "Enterprise"],
+        "business_impact": ["our production pipeline", "customer-facing reports", "automated billing sync", "real-time dashboards", "nightly data exports"],
+        "customer_name": ["Uma Patel", "Victor Reyes", "Wendy Liu", "Xavier Dumont", "Yuki Sato"],
+        "customer_name_lower": ["uma.patel", "victor.reyes", "wendy.liu", "xavier.dumont", "yuki.sato"],
+        "email_domain": ["saasapp.io", "devtools.com", "cloudops.net", "dataflow.co", "integrations.dev"],
+        "company_name": ["SaasApp", "DevTools Inc", "CloudOps", "DataFlow", "Integrations Co"]
+      }
+    },
+    {
+      "archetype_id": "integration_outage",
+      "display_name": "Integration Outage — Org-Wide",
+      "difficulty": "hard",
+      "visible_template": {
+        "subject_pattern": "{integration_name} integration down — affecting entire org",
+        "body_pattern": "Our {integration_name} integration has been completely down since {outage_start}. All {affected_user_count} users in our organization are affected. We're seeing error \"{error_message}\" across all endpoints. This is critical — we have {business_context}. Immediate escalation requested. — {customer_name}, {role_title}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": ["error_log_{integration_name_lower}.txt"],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Our {integration_name} integration has been completely down since {outage_start}. All {affected_user_count} users in our organization are affected.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "We're seeing error \"{error_message}\" across all endpoints. This is critical — we have {business_context}. Immediate escalation requested. — {customer_name}, {role_title}, {company_name}",
+            "timestamp_offset_minutes": 15
+          },
+          {
+            "role": "internal_note",
+            "content_pattern": "Monitoring confirms elevated error rates on {integration_name_lower} connector since {outage_start}. No deploy in the last 24h.",
+            "timestamp_offset_minutes": 20
+          }
+        ],
+        "internal_notes_pattern": [
+          "Enterprise customer. {integration_name} connector last healthy {last_healthy}.",
+          "Monitoring alert already fired for {integration_name_lower} — see incident #{incident_id}."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "integration_failure",
+        "product_area": "integrations_platform",
+        "impact": "org_wide",
+        "urgency": "critical",
+        "required_queue": "tech_support_l1",
+        "required_missing_fields": [],
+        "escalation_required": true,
+        "escalation_target": "tech_support_l2",
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_technical_resolved"],
+        "gold_terminal_status": "escalated",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "integration_outage",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "inspect_thread_history", "checkpoint": false},
+          {"id": "classify_technical_integration", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "route_tech_l1", "checkpoint": true},
+          {"id": "escalate_tech_l2", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "inspect_thread_history", "guard": null},
+          {"from": "inspect_thread_history", "to": "classify_technical_integration", "guard": null},
+          {"from": "classify_technical_integration", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "route_tech_l1", "guard": "classification_set"},
+          {"from": "route_tech_l1", "to": "escalate_tech_l2", "guard": "escalation_required"}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["escalate_tech_l2"]
+      },
+      "variation_parameters": {
+        "integration_name": ["Salesforce", "Slack", "Jira", "HubSpot", "Zendesk"],
+        "integration_name_lower": ["salesforce", "slack", "jira", "hubspot", "zendesk"],
+        "outage_start": ["2026-04-05T06:00:00Z", "2026-04-04T22:30:00Z", "2026-04-05T09:15:00Z", "2026-04-05T03:00:00Z", "2026-04-04T18:45:00Z"],
+        "affected_user_count": ["150", "320", "85", "500", "210"],
+        "error_message": ["Connection refused by remote host", "OAuth token refresh failed", "Rate limit exceeded — circuit breaker open", "TLS handshake timeout", "502 Bad Gateway from upstream"],
+        "business_context": ["a product launch tomorrow", "quarterly close happening now", "an enterprise client demo in 1 hour", "regulatory reporting due today", "a critical data migration underway"],
+        "customer_name": ["Zara Mitchell", "Aiden Brooks", "Bianca Rossi", "Carlos Mendes", "Diana Osei"],
+        "customer_name_lower": ["zara.mitchell", "aiden.brooks", "bianca.rossi", "carlos.mendes", "diana.osei"],
+        "email_domain": ["megacorp.com", "globaltech.io", "finserv.net", "retailgiant.com", "healthcloud.org"],
+        "company_name": ["MegaCorp", "GlobalTech", "FinServ", "RetailGiant", "HealthCloud"],
+        "role_title": ["VP Engineering", "CTO", "Director of IT", "Head of Platform", "Lead Architect"],
+        "last_healthy": ["2026-04-04T23:59:00Z", "2026-04-04T17:00:00Z", "2026-04-05T05:45:00Z", "2026-04-04T12:00:00Z", "2026-04-04T20:30:00Z"],
+        "incident_id": ["INC-4401", "INC-4402", "INC-4403", "INC-4404", "INC-4405"]
+      }
+    },
+    {
+      "archetype_id": "suspicious_login_security_review",
+      "display_name": "Suspicious Login — Security Review",
+      "difficulty": "hard",
+      "visible_template": {
+        "subject_pattern": "Suspicious login detected on one of our accounts",
+        "body_pattern": "We detected an unusual login on one of our organization accounts. The login originated from an unfamiliar location and we are concerned about unauthorized access. This needs immediate investigation. — {customer_name}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "We detected an unusual login on one of our organization accounts. The login originated from an unfamiliar location and we are concerned about unauthorized access.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "This needs immediate investigation. Multiple team members have reported being unable to access their sessions. — {customer_name}, {company_name}",
+            "timestamp_offset_minutes": 10
+          },
+          {
+            "role": "internal_note",
+            "content_pattern": "Auth system flagged anomalous login pattern. Geo mismatch detected.",
+            "timestamp_offset_minutes": 15
+          }
+        ],
+        "internal_notes_pattern": [
+          "Security alert triggered. Investigation pending.",
+          "Customer is enterprise tier. Expedited response required."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "security",
+        "issue_subtype": "suspicious_login",
+        "product_area": "auth_system",
+        "impact": "org_wide",
+        "urgency": "high",
+        "required_queue": "account_team",
+        "required_missing_fields": ["ip_address", "incident_timestamp", "affected_account"],
+        "escalation_required": true,
+        "escalation_target": "security_team",
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_security_details", "close_security_resolved"],
+        "gold_terminal_status": "escalated",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "suspicious_login_security_review",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "inspect_thread_history", "checkpoint": false},
+          {"id": "classify_security_suspicious_login", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_security_details", "checkpoint": true},
+          {"id": "receive_security_details", "checkpoint": false},
+          {"id": "route_account_team", "checkpoint": true},
+          {"id": "escalate_security_team", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "inspect_thread_history", "guard": null},
+          {"from": "inspect_thread_history", "to": "classify_security_suspicious_login", "guard": null},
+          {"from": "classify_security_suspicious_login", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_security_details", "guard": "missing_security_details"},
+          {"from": "request_security_details", "to": "receive_security_details", "guard": null},
+          {"from": "receive_security_details", "to": "route_account_team", "guard": "info_received"},
+          {"from": "route_account_team", "to": "escalate_security_team", "guard": "escalation_required"}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["escalate_security_team"]
+      },
+      "variation_parameters": {
+        "ip_address": ["203.0.113.42", "198.51.100.17", "192.0.2.88", "203.0.113.99", "198.51.100.200"],
+        "incident_timestamp": ["2026-04-05T02:15:00Z", "2026-04-04T23:45:00Z", "2026-04-05T06:30:00Z", "2026-04-05T01:00:00Z", "2026-04-04T19:20:00Z"],
+        "affected_account": ["admin@bigcorp.com", "security@fintech.io", "ops@healthsys.org", "root@retailco.net", "sysadmin@edtech.edu"],
+        "customer_name": ["Fiona Grant", "George Akbar", "Hannah Lund", "Ivan Petrov", "Jia Li"],
+        "customer_name_lower": ["fiona.grant", "george.akbar", "hannah.lund", "ivan.petrov", "jia.li"],
+        "email_domain": ["bigcorp.com", "fintech.io", "healthsys.org", "retailco.net", "edtech.edu"],
+        "company_name": ["BigCorp", "FinTech Inc", "HealthSys", "RetailCo", "EdTech Academy"]
+      }
+    },
+    {
+      "archetype_id": "shipment_tracking_problem",
+      "display_name": "Shipment Tracking Problem",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "Tracking not updating for order {order_ref}",
+        "body_pattern": "Hi, I ordered {product_description} and the tracking for my shipment has not updated since {last_update_date}. Can you check what is going on? Thanks, {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi, I ordered {product_description} and the tracking for my shipment has not updated since {last_update_date}. Can you check what is going on? Thanks, {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": []
+      },
+      "hidden_truth": {
+        "customer_tier": "free",
+        "source_channel": "customer_email",
+        "issue_family": "shipping",
+        "issue_subtype": "tracking_problem",
+        "product_area": "logistics",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "shipping_team",
+        "required_missing_fields": ["tracking_number", "shipping_address"],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_shipping_details", "close_shipping_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "shipment_tracking_problem",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_shipping_tracking", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_shipping_details", "checkpoint": true},
+          {"id": "receive_shipping_details", "checkpoint": false},
+          {"id": "route_shipping_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_shipping_tracking", "guard": null},
+          {"from": "classify_shipping_tracking", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_shipping_details", "guard": "missing_shipping_details"},
+          {"from": "request_shipping_details", "to": "receive_shipping_details", "guard": null},
+          {"from": "receive_shipping_details", "to": "route_shipping_team", "guard": "info_received"},
+          {"from": "route_shipping_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "tracking_number": ["TRK-9981234", "TRK-7765432", "TRK-5549876", "TRK-3321098", "TRK-1107654"],
+        "shipping_address": ["123 Main St, Austin TX 78701", "456 Oak Ave, Portland OR 97201", "789 Pine Rd, Denver CO 80201", "321 Elm Blvd, Seattle WA 98101", "654 Cedar Ln, Chicago IL 60601"],
+        "order_ref": ["SHP-20260401-A", "SHP-20260328-B", "SHP-20260325-C", "SHP-20260330-D", "SHP-20260402-E"],
+        "product_description": ["a wireless keyboard", "a monitor stand", "a USB-C hub", "a laptop sleeve", "a webcam"],
+        "last_update_date": ["2026-03-30", "2026-03-28", "2026-04-01", "2026-03-25", "2026-04-02"],
+        "customer_name": ["Kenji Mori", "Lara Schmidt", "Miguel Torres", "Nadia Volkov", "Oscar Bjork"],
+        "customer_name_lower": ["kenji.mori", "lara.schmidt", "miguel.torres", "nadia.volkov", "oscar.bjork"],
+        "email_domain": ["gmail.com", "outlook.com", "yahoo.com", "protonmail.com", "icloud.com"]
+      }
+    },
+    {
+      "archetype_id": "duplicate_complaint",
+      "display_name": "Duplicate Complaint — Failed Charge",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "RE: Charge failed AGAIN — {product_name}",
+        "body_pattern": "This is the second time I am writing about a failed charge for {product_name}. I already submitted ticket {original_ticket_id} about this same issue. The charge of ${charge_amount} on {charge_date} is still not resolved. — {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "This is the second time I am writing about a failed charge for {product_name}. I already submitted ticket {original_ticket_id} about this same issue.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "The charge of ${charge_amount} on {charge_date} is still not resolved. — {customer_name}",
+            "timestamp_offset_minutes": 5
+          }
+        ],
+        "internal_notes_pattern": [
+          "Possible duplicate of {original_ticket_id}. Verify before merging."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "billing",
+        "issue_subtype": "failed_charge",
+        "product_area": "billing_portal",
+        "impact": "single_user",
+        "urgency": "medium",
+        "required_queue": "billing_team",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": true,
+        "duplicate_of": "{original_ticket_id}",
+        "correct_template_ids": ["close_duplicate"],
+        "gold_terminal_status": "merged",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "duplicate_complaint",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_billing_failed_charge", "checkpoint": true},
+          {"id": "identify_duplicate", "checkpoint": true},
+          {"id": "merge_duplicate", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_billing_failed_charge", "guard": null},
+          {"from": "classify_billing_failed_charge", "to": "identify_duplicate", "guard": null},
+          {"from": "identify_duplicate", "to": "merge_duplicate", "guard": "duplicate_confirmed"}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["merge_duplicate"]
+      },
+      "variation_parameters": {
+        "original_ticket_id": ["T-20260401-001", "T-20260328-042", "T-20260325-017", "T-20260330-088", "T-20260402-005"],
+        "product_name": ["Cloud Pro Plan", "Enterprise Suite", "API Access Bundle", "Data Storage Addon", "Analytics Dashboard"],
+        "charge_amount": ["49.99", "99.00", "199.99", "29.95", "149.00"],
+        "charge_date": ["2026-03-15", "2026-03-20", "2026-03-25", "2026-04-01", "2026-03-10"],
+        "customer_name": ["Paula Diaz", "Raj Kapoor", "Sofia Engstrom", "Tariq Hassan", "Uma Okonkwo"],
+        "customer_name_lower": ["paula.diaz", "raj.kapoor", "sofia.engstrom", "tariq.hassan", "uma.okonkwo"],
+        "email_domain": ["example.com", "corpmail.net", "techfirm.io", "startup.co", "enterprise.org"]
+      }
+    },
+    {
+      "archetype_id": "spam_marketing_email",
+      "display_name": "Spam / Marketing Email",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "{spam_subject}",
+        "body_pattern": "{spam_body} — {sender_name}",
+        "sender_pattern": "{sender_name_lower}@{spam_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "{spam_body} — {sender_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": []
+      },
+      "hidden_truth": {
+        "customer_tier": "free",
+        "source_channel": "customer_email",
+        "issue_family": "billing",
+        "issue_subtype": "failed_charge",
+        "product_area": "unknown",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "spam_filter",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_spam"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": "spam_marketing"
+      },
+      "sop_graph": {
+        "graph_id": "spam_marketing_email",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "identify_spam", "checkpoint": true},
+          {"id": "close_non_actionable", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "identify_spam", "guard": null},
+          {"from": "identify_spam", "to": "close_non_actionable", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_non_actionable"]
+      },
+      "variation_parameters": {
+        "spam_subject": ["EXCLUSIVE OFFER — 90% OFF!", "You have been selected for a FREE trial!", "LIMITED TIME: Boost your revenue now!", "Congratulations! Claim your prize today!", "Act now — special partnership opportunity!"],
+        "spam_body": ["Dear valued customer, we have an exclusive offer just for you. Click here to claim your discount on premium services. This offer expires in 24 hours", "Hi there! You have been pre-approved for our new marketing suite. Reply YES to get started with a free 30-day trial of our growth platform", "We noticed your business could use a boost. Our AI-powered marketing tool can triple your leads in just 7 days. Schedule a demo today", "Congratulations on being selected! We are offering a limited partnership to qualified businesses. Contact us immediately to secure your spot", "Dear sir/madam, we represent a consortium of investors interested in your platform. Please reply with your bank details to proceed with the partnership"],
+        "sender_name": ["Marketing Team", "Special Offers", "Business Growth", "Partner Network", "Sales Division"],
+        "sender_name_lower": ["marketing.team", "special.offers", "business.growth", "partner.network", "sales.division"],
+        "spam_domain": ["promo-deals.xyz", "offer-hub.click", "growth-boost.biz", "partner-leads.info", "revenue-max.top"]
+      }
+    },
+    {
+      "archetype_id": "benign_expected_behavior",
+      "display_name": "Benign Expected Behavior",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "Bug? {feature_name} is not working as I expected",
+        "body_pattern": "Hi, I noticed that {feature_name} does {observed_behavior}. I expected it to {expected_behavior}. Is this a bug or am I missing something? — {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi, I noticed that {feature_name} does {observed_behavior}. I expected it to {expected_behavior}. Is this a bug or am I missing something? — {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Behavior described is expected per {doc_reference}. No action needed."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "free",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "bug_report",
+        "product_area": "product_features",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "spam_filter",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_benign_expected"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": "benign_expected"
+      },
+      "sop_graph": {
+        "graph_id": "benign_expected_behavior",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "identify_expected_behavior", "checkpoint": true},
+          {"id": "close_non_actionable", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "identify_expected_behavior", "guard": null},
+          {"from": "identify_expected_behavior", "to": "close_non_actionable", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_non_actionable"]
+      },
+      "variation_parameters": {
+        "feature_name": ["the export button", "date filtering", "the notification bell", "dashboard refresh", "the search bar"],
+        "observed_behavior": ["exports only the current page of results", "resets to the current month after page refresh", "shows a badge even after I clicked it", "takes about 10 seconds to update", "only matches exact phrases"],
+        "expected_behavior": ["export all results at once", "remember my selected date range", "clear the badge once clicked", "update instantly", "support fuzzy or partial matching"],
+        "customer_name": ["Vivian Cole", "Wesley Tan", "Xena Park", "Yosef Abadi", "Zoe Franklin"],
+        "customer_name_lower": ["vivian.cole", "wesley.tan", "xena.park", "yosef.abadi", "zoe.franklin"],
+        "email_domain": ["gmail.com", "outlook.com", "yahoo.com", "protonmail.com", "icloud.com"],
+        "doc_reference": ["KB-1042 Export Pagination", "KB-2015 Date Filter Behavior", "KB-3008 Notification Badge Logic", "KB-4001 Dashboard Refresh Interval", "KB-5023 Search Matching Rules"]
+      }
+    },
+    {
+      "archetype_id": "automation_false_positive",
+      "display_name": "Automation False Positive",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "[ALERT] {alert_name} triggered for {monitored_service}",
+        "body_pattern": "Automated alert: {alert_name} was triggered for {monitored_service} at {alert_timestamp}. Severity: {alert_severity}. Threshold: {threshold_description}.",
+        "sender_pattern": "monitoring@{system_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "system",
+            "content_pattern": "Automated alert: {alert_name} was triggered for {monitored_service} at {alert_timestamp}. Severity: {alert_severity}. Threshold: {threshold_description}.",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Alert confirmed as false positive. Metric returned to normal within 2 minutes. No customer impact."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "internal",
+        "source_channel": "monitoring_alert",
+        "issue_family": "technical",
+        "issue_subtype": "bug_report",
+        "product_area": "monitoring",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "spam_filter",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_false_positive"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": "automation_false_positive"
+      },
+      "sop_graph": {
+        "graph_id": "automation_false_positive",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "identify_false_positive", "checkpoint": true},
+          {"id": "close_non_actionable", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "identify_false_positive", "guard": null},
+          {"from": "identify_false_positive", "to": "close_non_actionable", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_non_actionable"]
+      },
+      "variation_parameters": {
+        "alert_name": ["High CPU Usage", "Memory Pressure Warning", "Disk I/O Spike", "Network Latency Alert", "Error Rate Threshold"],
+        "monitored_service": ["api-gateway-prod", "auth-service-prod", "billing-worker-prod", "search-indexer-prod", "notification-relay-prod"],
+        "alert_timestamp": ["2026-04-05T03:12:00Z", "2026-04-05T07:45:00Z", "2026-04-04T22:30:00Z", "2026-04-05T11:00:00Z", "2026-04-05T01:15:00Z"],
+        "alert_severity": ["warning", "critical", "warning", "info", "warning"],
+        "threshold_description": ["CPU > 90% for 1 minute", "Memory > 85% for 5 minutes", "Disk IOPS > 10000 for 30 seconds", "P99 latency > 500ms for 2 minutes", "Error rate > 5% for 1 minute"],
+        "system_domain": ["internal.platform.io", "ops.platform.io", "alerts.platform.io", "monitoring.platform.io", "infra.platform.io"]
+      }
+    },
+    {
+      "archetype_id": "data_error_generated_ticket",
+      "display_name": "Data Error Generated Ticket",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "[AUTO] Data sync error — {sync_source} to {sync_target}",
+        "body_pattern": "An automated data sync from {sync_source} to {sync_target} generated an error at {error_timestamp}. Error: {error_detail}. This ticket was auto-created by the sync pipeline.",
+        "sender_pattern": "data-pipeline@{system_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "system",
+            "content_pattern": "An automated data sync from {sync_source} to {sync_target} generated an error at {error_timestamp}. Error: {error_detail}. This ticket was auto-created by the sync pipeline.",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": [
+          "Data pipeline auto-generated. Error was transient — next sync succeeded. No manual action needed."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "internal",
+        "source_channel": "internal_report",
+        "issue_family": "technical",
+        "issue_subtype": "bug_report",
+        "product_area": "data_pipeline",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "spam_filter",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_data_error"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": "data_error"
+      },
+      "sop_graph": {
+        "graph_id": "data_error_generated_ticket",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "identify_data_error", "checkpoint": true},
+          {"id": "close_non_actionable", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "identify_data_error", "guard": null},
+          {"from": "identify_data_error", "to": "close_non_actionable", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_non_actionable"]
+      },
+      "variation_parameters": {
+        "sync_source": ["CRM", "Billing DB", "User Directory", "Analytics Warehouse", "Inventory System"],
+        "sync_target": ["Data Lake", "Reporting DB", "Search Index", "Audit Log", "Cache Layer"],
+        "error_timestamp": ["2026-04-05T04:00:00Z", "2026-04-05T08:30:00Z", "2026-04-04T23:15:00Z", "2026-04-05T12:00:00Z", "2026-04-05T02:45:00Z"],
+        "error_detail": ["Row count mismatch: expected 1000, got 998", "Timeout connecting to target — retried successfully", "Schema drift detected on column 'updated_at'", "Duplicate key violation on batch insert", "Stale checkpoint — resynced from last known good state"],
+        "system_domain": ["internal.platform.io", "ops.platform.io", "data.platform.io", "sync.platform.io", "pipeline.platform.io"]
+      }
+    },
+    {
+      "archetype_id": "feature_request_misfiled_as_support",
+      "display_name": "Feature Request Misfiled as Support",
+      "difficulty": "easy",
+      "visible_template": {
+        "subject_pattern": "Request: {feature_description}",
+        "body_pattern": "Hi team, I would really like to see {feature_description} added to {product_area_name}. Currently I have to {current_workaround} which is time-consuming. This would save our team a lot of effort. Thanks, {customer_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi team, I would really like to see {feature_description} added to {product_area_name}. Currently I have to {current_workaround} which is time-consuming. This would save our team a lot of effort. Thanks, {customer_name}",
+            "timestamp_offset_minutes": 0
+          }
+        ],
+        "internal_notes_pattern": []
+      },
+      "hidden_truth": {
+        "customer_tier": "pro",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "bug_report",
+        "product_area": "product_features",
+        "impact": "single_user",
+        "urgency": "low",
+        "required_queue": "sales_or_feature_requests",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_feature_request"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "feature_request_misfiled_as_support",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "identify_feature_request", "checkpoint": true},
+          {"id": "route_sales_feature", "checkpoint": true},
+          {"id": "close_feature_request", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "identify_feature_request", "guard": null},
+          {"from": "identify_feature_request", "to": "route_sales_feature", "guard": null},
+          {"from": "route_sales_feature", "to": "close_feature_request", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_feature_request"]
+      },
+      "variation_parameters": {
+        "feature_description": ["bulk export to CSV", "dark mode for the dashboard", "webhook retry configuration", "custom report scheduling", "API rate limit increase option"],
+        "product_area_name": ["the Analytics Dashboard", "the Admin Portal", "the Integration Hub", "the Reporting Module", "the API Console"],
+        "current_workaround": ["manually copy data row by row", "use a browser extension for dark mode", "resubmit failed webhooks manually", "run reports by hand every Monday", "contact support each time I hit the limit"],
+        "customer_name": ["Amara Obi", "Ben Stein", "Carla Ruiz", "Derek Fong", "Elena Morozova"],
+        "customer_name_lower": ["amara.obi", "ben.stein", "carla.ruiz", "derek.fong", "elena.morozova"],
+        "email_domain": ["example.com", "corpmail.net", "techfirm.io", "startup.co", "enterprise.org"]
+      }
+    },
+    {
+      "archetype_id": "org_wide_outage_report",
+      "display_name": "Org-Wide Outage Report",
+      "difficulty": "hard",
+      "visible_template": {
+        "subject_pattern": "CRITICAL: {service_name} down for entire organization",
+        "body_pattern": "Our entire organization of {affected_user_count} users cannot access {service_name}. This started at {outage_start} and is completely blocking {business_context}. We need immediate assistance. — {customer_name}, {role_title}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": ["error_screenshot_{service_name_lower}.png"],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Our entire organization of {affected_user_count} users cannot access {service_name}. This started at {outage_start}.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "This is completely blocking {business_context}. We need immediate assistance. — {customer_name}, {role_title}, {company_name}",
+            "timestamp_offset_minutes": 12
+          },
+          {
+            "role": "internal_note",
+            "content_pattern": "Enterprise SLA customer. No related incidents in the last 48h. Service health dashboard shows green.",
+            "timestamp_offset_minutes": 18
+          }
+        ],
+        "internal_notes_pattern": [
+          "Enterprise customer with {affected_user_count} seats. SLA clock started at {outage_start}."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "integration_failure",
+        "product_area": "platform_core",
+        "impact": "org_wide",
+        "urgency": "critical",
+        "required_queue": "tech_support_l1",
+        "required_missing_fields": [],
+        "escalation_required": true,
+        "escalation_target": "tech_support_l2",
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_technical_resolved"],
+        "gold_terminal_status": "escalated",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "org_wide_outage_report",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "inspect_thread_history", "checkpoint": false},
+          {"id": "classify_technical_integration", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "route_tech_l1", "checkpoint": true},
+          {"id": "escalate_tech_l2", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "inspect_thread_history", "guard": null},
+          {"from": "inspect_thread_history", "to": "classify_technical_integration", "guard": null},
+          {"from": "classify_technical_integration", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "route_tech_l1", "guard": "classification_set"},
+          {"from": "route_tech_l1", "to": "escalate_tech_l2", "guard": "escalation_required"}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["escalate_tech_l2"]
+      },
+      "variation_parameters": {
+        "service_name": ["Analytics Platform", "Collaboration Hub", "Data Warehouse", "CRM Module", "Reporting Engine"],
+        "service_name_lower": ["analytics-platform", "collaboration-hub", "data-warehouse", "crm-module", "reporting-engine"],
+        "outage_start": ["2026-04-05T08:00:00Z", "2026-04-05T06:30:00Z", "2026-04-05T10:15:00Z", "2026-04-05T03:00:00Z", "2026-04-04T22:00:00Z"],
+        "affected_user_count": ["200", "450", "120", "600", "350"],
+        "business_context": ["quarterly earnings preparation", "a live product demo with investors", "regulatory compliance reporting", "year-end audit processing", "a customer migration that cannot be paused"],
+        "customer_name": ["Felix Hartmann", "Gabriela Santos", "Henrik Nilsson", "Ingrid Bakker", "Juan Morales"],
+        "customer_name_lower": ["felix.hartmann", "gabriela.santos", "henrik.nilsson", "ingrid.bakker", "juan.morales"],
+        "email_domain": ["megacorp.com", "globaltech.io", "finserv.net", "retailgiant.com", "healthcloud.org"],
+        "company_name": ["MegaCorp", "GlobalTech", "FinServ", "RetailGiant", "HealthCloud"],
+        "role_title": ["VP Engineering", "CTO", "Director of IT", "Head of Platform", "Lead Architect"]
+      }
+    },
+    {
+      "archetype_id": "internal_escalation_from_sales",
+      "display_name": "Internal Escalation from Sales",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "[INTERNAL] Billing issue for customer {company_name}",
+        "body_pattern": "Sales team here. Our customer {company_name} (contact: {customer_contact}) reported a failed charge on their account. They were charged ${charge_amount} on {charge_date} but the payment did not go through. This is affecting the renewal process. Please investigate. — {sales_rep_name}, Sales",
+        "sender_pattern": "{sales_rep_name_lower}@internal.platform.io",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "internal",
+            "content_pattern": "Sales team here. Our customer {company_name} (contact: {customer_contact}) reported a failed charge on their account. They were charged ${charge_amount} on {charge_date} but the payment did not go through.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "internal",
+            "content_pattern": "This is affecting the renewal process. Please investigate. — {sales_rep_name}, Sales",
+            "timestamp_offset_minutes": 3
+          }
+        ],
+        "internal_notes_pattern": [
+          "Internal ticket from sales. Customer {company_name} has renewal pending."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "internal",
+        "source_channel": "internal_report",
+        "issue_family": "billing",
+        "issue_subtype": "failed_charge",
+        "product_area": "billing_portal",
+        "impact": "single_user",
+        "urgency": "medium",
+        "required_queue": "billing_team",
+        "required_missing_fields": ["order_id"],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_order_id", "close_billing_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "internal_escalation_from_sales",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_billing_failed_charge", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_order_id", "checkpoint": true},
+          {"id": "receive_order_id", "checkpoint": false},
+          {"id": "route_billing_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_billing_failed_charge", "guard": null},
+          {"from": "classify_billing_failed_charge", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_order_id", "guard": "missing_order_id"},
+          {"from": "request_order_id", "to": "receive_order_id", "guard": null},
+          {"from": "receive_order_id", "to": "route_billing_team", "guard": "info_received"},
+          {"from": "route_billing_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "order_id": ["ORD-20260401-101", "ORD-20260328-202", "ORD-20260325-303", "ORD-20260330-404", "ORD-20260402-505"],
+        "company_name": ["Acme Corp", "TechStart Inc", "Globex Ltd", "Initech Solutions", "Umbrella Co"],
+        "customer_contact": ["john@acmecorp.com", "sarah@techstart.io", "mike@globex.co.uk", "lisa@initech.com", "tom@umbrella.net"],
+        "charge_amount": ["500.00", "1200.00", "2499.99", "750.00", "3500.00"],
+        "charge_date": ["2026-03-28", "2026-04-01", "2026-03-25", "2026-04-02", "2026-03-30"],
+        "sales_rep_name": ["Nathan Cross", "Olivia Park", "Peter Walsh", "Quinn Zhao", "Rachel Adams"],
+        "sales_rep_name_lower": ["nathan.cross", "olivia.park", "peter.walsh", "quinn.zhao", "rachel.adams"]
+      }
+    },
+    {
+      "archetype_id": "entitlement_mismatch",
+      "display_name": "Entitlement Mismatch — Invoice Error",
+      "difficulty": "medium",
+      "visible_template": {
+        "subject_pattern": "Invoice discrepancy — charged for {feature_name} not in our plan",
+        "body_pattern": "Hello, we received invoice #{invoice_number} for billing period {billing_period} which includes a charge of ${disputed_amount} for {feature_name}. However, our {plan_type} plan does not include this feature. We need this corrected. — {customer_name}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": ["invoice_{invoice_number}.pdf"],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hello, we received invoice #{invoice_number} for billing period {billing_period} which includes a charge of ${disputed_amount} for {feature_name}. However, our {plan_type} plan does not include this feature.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "We need this corrected. — {customer_name}, {company_name}",
+            "timestamp_offset_minutes": 5
+          }
+        ],
+        "internal_notes_pattern": [
+          "Enterprise customer {company_name}. Plan: {plan_type}. Invoice {invoice_number} under review."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "billing",
+        "issue_subtype": "invoice_error",
+        "product_area": "billing_portal",
+        "impact": "single_user",
+        "urgency": "medium",
+        "required_queue": "billing_team",
+        "required_missing_fields": [],
+        "escalation_required": false,
+        "escalation_target": null,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["close_billing_resolved"],
+        "gold_terminal_status": "closed",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "entitlement_mismatch",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "classify_billing_invoice", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "route_billing_team", "checkpoint": true},
+          {"id": "close_resolved", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "classify_billing_invoice", "guard": null},
+          {"from": "classify_billing_invoice", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "route_billing_team", "guard": null},
+          {"from": "route_billing_team", "to": "close_resolved", "guard": null}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["close_resolved"]
+      },
+      "variation_parameters": {
+        "invoice_number": ["INV-20260401-E01", "INV-20260315-E02", "INV-20260328-E03", "INV-20260301-E04", "INV-20260410-E05"],
+        "billing_period": ["April 2026", "March 2026", "Q1 2026", "February 2026", "Q2 2026"],
+        "disputed_amount": ["450.00", "1800.00", "675.00", "2200.00", "890.00"],
+        "feature_name": ["Advanced Analytics", "Custom Integrations", "Priority Support", "SSO Module", "Data Export Pro"],
+        "plan_type": ["Enterprise Standard", "Enterprise Growth", "Enterprise Basic", "Enterprise Plus", "Enterprise Starter"],
+        "customer_name": ["Simone Berger", "Thomas Choi", "Ursula Mendez", "Viktor Lund", "Wanda Okafor"],
+        "customer_name_lower": ["simone.berger", "thomas.choi", "ursula.mendez", "viktor.lund", "wanda.okafor"],
+        "email_domain": ["megacorp.com", "globaltech.io", "finserv.net", "retailgiant.com", "healthcloud.org"],
+        "company_name": ["MegaCorp", "GlobalTech", "FinServ", "RetailGiant", "HealthCloud"]
+      }
+    },
+    {
+      "archetype_id": "thread_conflicting_urgency",
+      "display_name": "Thread with Conflicting Urgency Signals",
+      "difficulty": "hard",
+      "visible_template": {
+        "subject_pattern": "API issue — {api_symptom}",
+        "body_pattern": "Hi, we have been experiencing {api_symptom} on our API integration since {onset_description}. Initially it seemed intermittent but now it appears to be affecting all requests. — {customer_name}, {company_name}",
+        "sender_pattern": "{customer_name_lower}@{email_domain}",
+        "attachments": [],
+        "thread_history_pattern": [
+          {
+            "role": "customer",
+            "content_pattern": "Hi, we have been experiencing {api_symptom} on our API integration since {onset_description}. Initially it seemed intermittent.",
+            "timestamp_offset_minutes": 0
+          },
+          {
+            "role": "customer",
+            "content_pattern": "Update: this is now affecting all {affected_user_count} users. Our {business_context} is blocked. We are losing ${revenue_impact} per hour.",
+            "timestamp_offset_minutes": 30
+          },
+          {
+            "role": "internal_note",
+            "content_pattern": "Ticket initially looked low-priority but follow-up reveals revenue impact. Re-assess urgency.",
+            "timestamp_offset_minutes": 35
+          }
+        ],
+        "internal_notes_pattern": [
+          "Thread shows escalating severity. Initial message understated impact. Re-assessment needed."
+        ]
+      },
+      "hidden_truth": {
+        "customer_tier": "enterprise",
+        "source_channel": "customer_email",
+        "issue_family": "technical",
+        "issue_subtype": "api_error",
+        "product_area": "api_platform",
+        "impact": "revenue_affecting",
+        "urgency": "critical",
+        "required_queue": "tech_support_l1",
+        "required_missing_fields": ["api_endpoint", "error_code", "request_id"],
+        "escalation_required": true,
+        "escalation_target": "tech_support_l2",
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "correct_template_ids": ["req_api_details", "close_technical_resolved"],
+        "gold_terminal_status": "escalated",
+        "non_actionable_subtype": null
+      },
+      "sop_graph": {
+        "graph_id": "thread_conflicting_urgency",
+        "nodes": [
+          {"id": "new", "checkpoint": false},
+          {"id": "open", "checkpoint": false},
+          {"id": "inspect_thread_history", "checkpoint": false},
+          {"id": "classify_technical_api", "checkpoint": true},
+          {"id": "set_impact_urgency", "checkpoint": true},
+          {"id": "request_api_details", "checkpoint": true},
+          {"id": "receive_api_details", "checkpoint": false},
+          {"id": "route_tech_l1", "checkpoint": true},
+          {"id": "escalate_tech_l2", "checkpoint": true}
+        ],
+        "edges": [
+          {"from": "new", "to": "open", "guard": null},
+          {"from": "open", "to": "inspect_thread_history", "guard": null},
+          {"from": "inspect_thread_history", "to": "classify_technical_api", "guard": null},
+          {"from": "classify_technical_api", "to": "set_impact_urgency", "guard": null},
+          {"from": "set_impact_urgency", "to": "request_api_details", "guard": "missing_api_details"},
+          {"from": "request_api_details", "to": "receive_api_details", "guard": null},
+          {"from": "receive_api_details", "to": "route_tech_l1", "guard": "info_received"},
+          {"from": "route_tech_l1", "to": "escalate_tech_l2", "guard": "escalation_required"}
+        ],
+        "entry_node": "new",
+        "terminal_nodes": ["escalate_tech_l2"]
+      },
+      "variation_parameters": {
+        "api_endpoint": ["/v2/orders", "/v2/payments", "/v1/reports", "/v2/inventory", "/v2/subscriptions"],
+        "error_code": ["500", "502", "503", "504", "429"],
+        "request_id": ["req-p1q2r3", "req-s4t5u6", "req-v7w8x9", "req-y0z1a2", "req-b3c4d5"],
+        "api_symptom": ["intermittent 500 errors", "timeout on all POST requests", "rate limiting despite low volume", "connection reset errors", "malformed response bodies"],
+        "onset_description": ["yesterday afternoon", "this morning around 6 AM", "two days ago", "after last night's maintenance window", "gradually over the past week"],
+        "affected_user_count": ["100", "250", "75", "400", "180"],
+        "business_context": ["payment processing pipeline", "order fulfillment system", "real-time inventory sync", "subscription billing cycle", "partner API integration"],
+        "revenue_impact": ["5,000", "12,000", "3,500", "25,000", "8,000"],
+        "customer_name": ["Klaus Weber", "Lucia Ferreira", "Marco Bianchi", "Natasha Popov", "Omar Achraf"],
+        "customer_name_lower": ["klaus.weber", "lucia.ferreira", "marco.bianchi", "natasha.popov", "omar.achraf"],
+        "email_domain": ["megacorp.com", "globaltech.io", "finserv.net", "retailgiant.com", "healthcloud.org"],
+        "company_name": ["MegaCorp", "GlobalTech", "FinServ", "RetailGiant", "HealthCloud"]
+      }
+    }
+  ]
+}
