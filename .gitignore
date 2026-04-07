@@ -23,6 +23,7 @@ env/
 htmlcov/
 .coverage
 coverage.xml
+tt.py
 
 # Environment variables (contains API tokens)
 .env
@@ -37,6 +38,7 @@ outputs/evals/*
 # Claude Code / AI assistant config (local only)
 .claude/
 CLAUDE.md
+AGENTS.md
 
 # Ad-hoc test scripts (local development only)
 scripts/test_multi_model.py
