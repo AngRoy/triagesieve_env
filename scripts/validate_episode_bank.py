@@ -30,7 +30,11 @@ from triagesieve_env.server.triagesieve_env_environment import TriageSieveEnviro
 logger = logging.getLogger(__name__)
 
 _REQUIRED_KEYS = {"episode_id", "seed", "task_difficulty", "tickets", "action_budget", "base_time"}
-_SOLVABILITY_THRESHOLD = 0.90
+_SOLVABILITY_THRESHOLDS: dict[str, float] = {
+    "easy": 0.90,
+    "medium": 0.75,
+    "hard": 0.20,
+}
 _DETERMINISM_SAMPLE = 10  # spot-check first N unless --verbose
 
 
@@ -152,16 +156,18 @@ def _pass_solvability(episodes: list[dict[str, Any]]) -> tuple[list[float], list
 
     for ep in episodes:
         seed = ep["seed"]
-        difficulty = TaskDifficulty(ep["task_difficulty"])
+        diff_str = ep["task_difficulty"]
+        difficulty = TaskDifficulty(diff_str)
+        threshold = _SOLVABILITY_THRESHOLDS.get(diff_str, 0.90)
         trace = expert.run_episode(seed=seed, difficulty=difficulty)
         score = trace["final_score"]
         scores.append(score)
 
-        if score < _SOLVABILITY_THRESHOLD:
+        if score < threshold:
             errors.append(
                 f"Solvability FAIL: {ep['episode_id']} (seed={seed}, "
-                f"difficulty={ep['task_difficulty']}) scored {score:.4f} "
-                f"< {_SOLVABILITY_THRESHOLD}"
+                f"difficulty={diff_str}) scored {score:.4f} "
+                f"< {threshold}"
             )
 
     return scores, errors
@@ -222,12 +228,13 @@ def main(argv: list[str] | None = None) -> int:
     # Summary
     if scores:
         min_s, avg_s, max_s = min(scores), sum(scores) / len(scores), max(scores)
+        thresholds_str = ", ".join(f"{k}={v}" for k, v in _SOLVABILITY_THRESHOLDS.items())
         logger.info(
-            "Scores: min=%.4f  avg=%.4f  max=%.4f  (threshold=%.2f)",
+            "Scores: min=%.4f  avg=%.4f  max=%.4f  (thresholds: %s)",
             min_s,
             avg_s,
             max_s,
-            _SOLVABILITY_THRESHOLD,
+            thresholds_str,
         )
 
     if all_ok:
