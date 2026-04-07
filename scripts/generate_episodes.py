@@ -81,7 +81,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=str,
         required=True,
         choices=["easy", "medium", "hard", "all"],
-        help="Difficulty filter. 'all' derives difficulty from seed.",
+        help="Difficulty filter. 'all' cycles through easy/medium/hard evenly.",
     )
     parser.add_argument("--output", type=str, required=True, help="Output JSONL file path.")
     return parser.parse_args(argv)

@@ -921,11 +921,15 @@ class TriageSieveEnvironment(
         if ticket is None:
             return None
 
+        thread = self._ticket_thread_histories.get(ticket.ticket_id, [])
+        # Show the most recent message: the last thread entry if any, otherwise the original body.
+        latest = thread[-1]["content"] if thread else ticket.body
+
         return FocusedTicket(
             ticket_id=ticket.ticket_id,
             subject=ticket.subject,
-            latest_message=ticket.body,
-            thread_history=list(self._ticket_thread_histories.get(ticket.ticket_id, [])),
+            latest_message=latest,
+            thread_history=list(thread),
             attachments=list(ticket.attachments),
             visible_internal_notes=list(ticket.internal_notes),
             prior_actions_taken=list(self._ticket_actions_log.get(ticket.ticket_id, [])),
