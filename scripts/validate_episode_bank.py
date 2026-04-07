@@ -22,17 +22,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-# Ensure package root is importable when run directly as a script.
-# The repo root (parent.parent) doubles as the package root via pyproject.toml
-# package-dir mapping.
-_REPO_ROOT = str(Path(__file__).resolve().parent.parent)
-if _REPO_ROOT not in sys.path:  # pragma: no cover
-    sys.path.insert(0, _REPO_ROOT)
-
-from triagesieve_env.baseline.scripted_expert import ScriptedExpert  # noqa: E402
-from triagesieve_env.models import TaskDifficulty  # noqa: E402
-from triagesieve_env.server.episode_engine import EpisodeEngine  # noqa: E402
-from triagesieve_env.server.triagesieve_env_environment import TriageSieveEnvironment  # noqa: E402
+from triagesieve_env.baseline.scripted_expert import ScriptedExpert
+from triagesieve_env.models import TaskDifficulty
+from triagesieve_env.server.episode_engine import EpisodeEngine
+from triagesieve_env.server.triagesieve_env_environment import TriageSieveEnvironment
 
 logger = logging.getLogger(__name__)
 

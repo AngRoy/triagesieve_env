@@ -19,13 +19,6 @@ import asyncio
 import json
 import os
 import re
-import sys
-from pathlib import Path
-
-# Ensure package root is importable regardless of the repo folder name.
-_REPO_ROOT = str(Path(__file__).resolve().parent)
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
 
 # Load .env file if present (so HF_TOKEN, LOCAL_IMAGE_NAME etc. work without
 # manually exporting in the shell). python-dotenv is already available via litellm.

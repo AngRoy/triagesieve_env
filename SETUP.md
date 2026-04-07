@@ -144,11 +144,11 @@ python scripts/smoke_playthrough.py --quiet
 ### Start the FastAPI server
 
 ```bash
-# Option A: uvicorn directly
-uvicorn server.app:app --reload --host 0.0.0.0 --port 8000
-
-# Option B: via project entry point
+# Option A: via project entry point (recommended)
 uv run server
+
+# Option B: uvicorn with fully-qualified module path
+python -m uvicorn triagesieve_env.server.app:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Verify server is running

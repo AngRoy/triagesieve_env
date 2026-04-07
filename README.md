@@ -192,16 +192,15 @@ Each step returns a `TriageSieveObservation` containing:
 | Medium | **1.000** | >= 0.75 |
 | Hard | **0.383** | >= 0.20 |
 
-### LLM Baseline Results (no hidden truth access, seed=42)
+### LLM Baseline Results (no hidden truth access, multi-turn, seed=42)
 
-| Model | Easy | Medium | Hard |
-|-------|------|--------|------|
-| Llama-3.3-70B-Instruct | **1.000** | 0.349 | 0.000 |
-| Qwen2.5-72B-Instruct | 0.710 | 0.586 | 0.000 |
-| Qwen2.5-7B-Instruct | 0.630 | 0.400 | 0.000 |
-| Llama-3.1-8B-Instruct | 0.000 | 0.386 | 0.000 |
+| Model | Easy | Medium | Hard | Avg |
+|-------|------|--------|------|-----|
+| Llama-3.3-70B-Instruct | **1.000** | **0.771** | **0.122** | **0.631** |
+| Qwen2.5-72B-Instruct | 0.720 | 0.627 | 0.155 | 0.501 |
+| DeepSeek-R1 | 0.470 | 0.253 | 0.076 | 0.267 |
 
-Llama-3.3-70B achieves a perfect score on easy by correctly following the full SOP (open, classify, set impact/urgency, request missing info, route, close). Smaller models struggle with action ordering and the structured JSON format.
+Llama-3.3-70B achieves a perfect score on easy and the highest average across all tiers. On hard tasks, all models struggle with budget management — they must process 3-4 tickets in 14 steps, requiring precise action ordering (request info before routing) and prioritization of high-urgency tickets. This validates the difficulty ladder design: hard tasks are genuinely challenging for frontier LLMs without fine-tuning.
 
 ---
 
@@ -219,7 +218,8 @@ pip install -e ".[dev]"
 ### Run the server locally
 
 ```bash
-uvicorn server.app:app --reload --port 8000
+uv run server
+# or: python -m uvicorn triagesieve_env.server.app:app --reload --port 8000
 ```
 
 ### Connect with the Python client
