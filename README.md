@@ -21,166 +21,88 @@ The agent plays the role of a tier-1 support engineer: it reads a live inbox of 
 
 ```mermaid
 flowchart LR
-    subgraph AGENT["&nbsp;&nbsp;Agent&nbsp;&nbsp;"]
-        direction TB
-        A1(["Observe"])
-        A2(["Decide"])
-        A1 --> A2
+    Agent["Agent\n(LLM / Policy)"] -->|"TriageSieveAction"| FG
+
+    subgraph Environment
+        FG["Format Gate"] -->|valid| SM["State Machine"]
+        SM -->|legal| AD["Action Dispatch"]
+        AD --> SOP["SOP Tracker"]
+        SOP -->|"step reward"| OBS["Build Observation"]
+        AD -->|"done = true"| TS["Terminal Scorer"]
     end
 
-    subgraph ENV["&nbsp;&nbsp;TriageSieve Environment&nbsp;&nbsp;"]
-        direction TB
-
-        subgraph GATE["&ensp;Validation Layer&ensp;"]
-            direction LR
-            G1["Format Gate<br/><i>schema + enum check</i>"]
-            G2["State Machine<br/><i>legal action filter</i>"]
-            G1 --> G2
-        end
-
-        subgraph CORE["&ensp;Execution Layer&ensp;"]
-            direction LR
-            C1["Action Dispatch<br/><i>10 action handlers</i>"]
-            C2["SOP Tracker<br/><i>policy DAG traversal</i>"]
-            C1 --> C2
-        end
-
-        subgraph SCORE["&ensp;Scoring Layer&ensp;"]
-            direction LR
-            S1["Step Shaping<br/><i>immediate reward</i>"]
-            S2["Terminal Scorer<br/><i>8-component + UJCS</i>"]
-        end
-
-        GATE --> CORE
-        CORE --> SCORE
+    subgraph Episode Engine
+        ARC["18 Archetypes"] --> RNG["Seeded RNG"]
+        RNG --> HT["Hidden Truth"]
     end
 
-    subgraph ENGINE["&nbsp;&nbsp;Episode Engine&nbsp;&nbsp;"]
-        direction TB
-        D1["18 Archetypes"]
-        D2["Seeded RNG"]
-        D3["Hidden Truth"]
-        D1 --> D2 --> D3
-    end
-
-    A2 -- "TriageSieveAction" --> G1
-    S1 -- "reward + observation" --> A1
-    S2 -. "final score ∈ (0,1)" .-> A1
-    D3 -. "ground truth<br/>reference" .-> S2
-    G1 -- "invalid → −0.02" --> A1
-
-    style AGENT fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    style ENV fill:#fef9ef,stroke:#d97706,stroke-width:2px,color:#78350f
-    style ENGINE fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
-    style GATE fill:#fef3c7,stroke:#d97706,color:#78350f
-    style CORE fill:#fed7aa,stroke:#d97706,color:#78350f
-    style SCORE fill:#fde68a,stroke:#d97706,color:#78350f
+    HT -.->|"ground truth"| TS
+    OBS -->|"TriageSieveObservation"| Agent
+    TS -->|"final score"| Agent
+    FG -->|"invalid: -0.02"| Agent
 ```
 
 ## Ticket Lifecycle
 
 ```mermaid
 stateDiagram-v2
-    direction LR
-
-    [*] --> NEW
-    NEW --> OPENED : open_ticket
-
-    state OPENED {
-        direction LR
-    }
-    OPENED --> CLASSIFIED : classify_ticket
-    OPENED --> MERGED : merge_duplicate
-    OPENED --> CLOSED : close<br/>(non-actionable only)
-
-    state CLASSIFIED {
-        direction LR
-    }
-    CLASSIFIED --> WAITING_FOR_INFO : request_information
-    CLASSIFIED --> ROUTED : route_ticket
-    CLASSIFIED --> ESCALATED : escalate_ticket
-    CLASSIFIED --> MERGED : merge_duplicate
-    CLASSIFIED --> CLOSED : close_ticket
-
-    WAITING_FOR_INFO --> CLASSIFIED : re-classify
-    WAITING_FOR_INFO --> ROUTED : route_ticket
-    WAITING_FOR_INFO --> ESCALATED : escalate_ticket
-    WAITING_FOR_INFO --> CLOSED : close_ticket
-
-    ROUTED --> ESCALATED : escalate_ticket
-    ROUTED --> CLOSED : close_ticket
-
-    ESCALATED --> CLOSED : close_ticket
-
-    MERGED --> [*]
-    CLOSED --> [*]
-
-    note right of ROUTED
-        Gated queues (L2, Security)
-        require classification +
-        impact/urgency before routing
-    end note
-
-    note right of MERGED
-        Terminal states:
-        no further actions
-    end note
+    [*] --> new
+    new --> opened : open_ticket
+    opened --> classified : classify_ticket
+    opened --> merged : merge_duplicate
+    opened --> closed : close (non-actionable only)
+    classified --> waiting_for_info : request_information
+    classified --> routed : route_ticket
+    classified --> escalated : escalate_ticket
+    classified --> merged : merge_duplicate
+    classified --> closed : close_ticket
+    waiting_for_info --> classified : re-classify
+    waiting_for_info --> routed : route_ticket
+    waiting_for_info --> escalated : escalate_ticket
+    waiting_for_info --> closed : close_ticket
+    routed --> escalated : escalate_ticket
+    routed --> closed : close_ticket
+    escalated --> closed : close_ticket
+    merged --> [*]
+    closed --> [*]
 ```
 
-## Scoring System
+> **Gated queues:** `tech_support_l2` and `security_team` require classification + impact/urgency before routing. Violating this returns a pushback and a -0.03 penalty.
+
+## Scoring
 
 ```mermaid
-flowchart TB
-    subgraph BIZ["Terminal Business Score &ensp; <i>max 0.85</i>"]
-        direction LR
-        subgraph PRIMARY["Primary Components"]
-            direction TB
-            C3["<b>Queue Routing</b><br/>0.20"]
-            C1["<b>Classification</b><br/>0.15"]
-            C2["<b>Impact / Urgency</b><br/>0.15"]
-        end
-        subgraph SECONDARY["Secondary Components"]
-            direction TB
-            C4["<b>Missing Info</b><br/>0.10"]
-            C5["<b>Escalation</b><br/>0.10"]
-        end
-        subgraph TERTIARY["Tertiary Components"]
-            direction TB
-            C6["<b>Dup / Non-actionable</b><br/>0.05"]
-            C7["<b>Template Choice</b><br/>0.05"]
-            C8["<b>Terminal Status</b><br/>0.05"]
-        end
-    end
-
-    subgraph UJCS_BOX["UJCS-OpenEnv &ensp; <i>weighted 0.15</i>"]
+flowchart LR
+    subgraph TB["Terminal Business Score (max 0.85)"]
         direction TB
-        U1["Compare agent path<br/>against gold SOP"]
-        U2["+1 checkpoint visited<br/>−1 checkpoint skipped<br/>−1 illegal transition"]
-        U3["Normalize to 0 – 1"]
-        U1 --> U2 --> U3
+        C1["Queue Routing — 0.20"]
+        C2["Classification — 0.15"]
+        C3["Impact/Urgency — 0.15"]
+        C4["Missing Info — 0.10"]
+        C5["Escalation — 0.10"]
+        C6["Dup/Non-actionable — 0.05"]
+        C7["Template Choice — 0.05"]
+        C8["Terminal Status — 0.05"]
     end
 
-    subgraph PEN["Episode Penalties &ensp; <i>subtracted</i>"]
+    subgraph UJ["UJCS (max 0.15)"]
         direction TB
-        P1["Invalid action &ensp; <b>−0.03</b> each"]
-        P2["Avoidable reassignment &ensp; <b>−0.05</b>"]
-        P3["Unnecessary escalation &ensp; <b>−0.05</b>"]
-        P4["SLA mishandling &ensp; <b>−0.05 / −0.10</b>"]
+        U1["SOP checkpoints visited vs skipped"]
+        U2["Normalized to 0-1"]
+        U1 --> U2
     end
 
-    BIZ --> FORMULA
-    UJCS_BOX --> FORMULA
-    PEN --> FORMULA
+    subgraph PN["Penalties (subtracted)"]
+        direction TB
+        P1["Invalid action: -0.03"]
+        P2["Reassignment: -0.05"]
+        P3["Escalation: -0.05"]
+        P4["SLA breach: -0.05 / -0.10"]
+    end
 
-    FORMULA["<b>Final Score</b> = Business Score + 0.15 x UJCS − Penalties<br/><i>clamped to (0, 1) &ensp;|&ensp; priority-weighted across tickets</i>"]
-
-    style BIZ fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
-    style PRIMARY fill:#a7f3d0,stroke:#059669,color:#064e3b
-    style SECONDARY fill:#a7f3d0,stroke:#059669,color:#064e3b
-    style TERTIARY fill:#a7f3d0,stroke:#059669,color:#064e3b
-    style UJCS_BOX fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    style PEN fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
-    style FORMULA fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    TB --> F["Final = Business + 0.15 x UJCS - Penalties"]
+    UJ --> F
+    PN --> F
 ```
 
 ---
