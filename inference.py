@@ -419,7 +419,8 @@ async def run_task(
 
         # Final score is the terminal observation.reward (already normalized to [0, 1])
         score = rewards[-1] if rewards else 0.0
-        score = min(max(score, 0.0), 1.0)
+        # Phase 2 requires scores strictly in (0, 1); eps >= 1e-3 so .3f never rounds to "0.000"/"1.000"
+        score = min(max(score, 1e-3), 1.0 - 1e-3)
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     finally:

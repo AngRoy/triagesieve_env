@@ -596,7 +596,7 @@ def compute_episode_score(ctx: EpisodeScoringContext) -> ScoreBreakdown:
 
     # Final score formula (section 17.6)
     raw_final = terminal_business_score + ujcs_contribution - penalties.total_penalty
-    final_score = max(0.0, min(1.0, raw_final))
+    final_score = max(1e-4, min(1.0 - 1e-4, raw_final))
 
     return ScoreBreakdown(
         per_ticket_scores=per_ticket,

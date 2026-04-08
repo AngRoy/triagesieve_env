@@ -307,7 +307,7 @@ def run_episode(model, tokenizer, seed: int, difficulty: TaskDifficulty) -> dict
         obs = env.step(TriageSieveAction(action_type=ActionType.FINISH_EPISODE, metadata={}))
 
     final_score = obs.reward if obs.reward is not None else 0.0
-    final_score = min(max(final_score, 0.0), 1.0)
+    final_score = min(max(final_score, 1e-3), 1.0 - 1e-3)
 
     return {
         "seed": seed,
