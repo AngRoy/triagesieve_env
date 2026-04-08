@@ -5,9 +5,13 @@ MANDATORY environment variables (see pre-submission checklist):
     API_BASE_URL       The API endpoint for the LLM.
     MODEL_NAME         The model identifier to use for inference.
     HF_TOKEN           Your Hugging Face / API key.
-    LOCAL_IMAGE_NAME   The name of the local image to use for the environment
-                       (required when using from_docker_image()).
 
+OPTIONAL:
+    LOCAL_IMAGE_NAME   Docker image name (when running locally via from_docker_image()).
+    ENV_URL            Remote environment URL (overrides default HF Space URL).
+
+When LOCAL_IMAGE_NAME is set, connects via Docker. Otherwise, connects to the
+deployed HF Space at the default URL (or ENV_URL if provided).
 Defaults are set only for API_BASE_URL and MODEL_NAME.
 All LLM calls use the OpenAI client configured via these variables.
 Stdout logs follow the required structured format ([START]/[STEP]/[END]).
@@ -54,8 +58,10 @@ API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-# Optional - if you use from_docker_image():
+# Environment connection: Docker (local) or HF Space (remote)
 LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+# HF Space URL — used when LOCAL_IMAGE_NAME is not set (e.g., during hackathon validation)
+HF_SPACE_URL = os.getenv("ENV_URL", "https://angshuman28-triagesieve-env.hf.space")
 
 BENCHMARK = "triagesieve_env"
 TEMPERATURE = 0.0
@@ -443,17 +449,31 @@ async def create_env_from_docker(image_name: str, timeout_s: float = 120.0) -> T
     return client
 
 
+async def create_env_from_space(space_url: str) -> TriageSieveEnv:
+    """Connect to an already-running HF Space (or any remote OpenEnv server)."""
+    client = TriageSieveEnv(base_url=space_url)
+    await client.connect()
+    return client
+
+
 async def main() -> None:
     if not HF_TOKEN:
         raise SystemExit("ERROR: HF_TOKEN environment variable is not set.")
-    if not LOCAL_IMAGE_NAME:
-        raise SystemExit("ERROR: LOCAL_IMAGE_NAME environment variable is not set.")
+
+    use_docker = bool(LOCAL_IMAGE_NAME)
+    if use_docker:
+        print(f"[INFO] Using Docker image: {LOCAL_IMAGE_NAME}", flush=True)
+    else:
+        print(f"[INFO] Using HF Space: {HF_SPACE_URL}", flush=True)
 
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
     results = []
     for cfg in TASK_CONFIGS:
-        env = await create_env_from_docker(LOCAL_IMAGE_NAME)
+        if use_docker:
+            env = await create_env_from_docker(LOCAL_IMAGE_NAME)
+        else:
+            env = await create_env_from_space(HF_SPACE_URL)
         result = await run_task(
             client=client,
             env=env,
