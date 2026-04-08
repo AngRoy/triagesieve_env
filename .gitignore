@@ -44,6 +44,14 @@ AGENTS.md
 scripts/test_multi_model.py
 scripts/test_multi_model_pro.py
 
+# Training artifacts (model weights too large for git; dataset is regenerable)
+outputs/sft_model/
+data/sft_dataset.jsonl
+outputs/eval_results.json
+
+# OpenEnv push exclude file (local workflow only)
+.openenvignore
+
 # OS files
 .DS_Store
 Thumbs.db

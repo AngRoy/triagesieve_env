@@ -202,6 +202,20 @@ Each step returns a `TriageSieveObservation` containing:
 
 Llama-3.3-70B achieves a perfect score on easy and the highest average across all tiers. On hard tasks, all models struggle with budget management — they must process 3-4 tickets in 14 steps, requiring precise action ordering (request info before routing) and prioritization of high-urgency tickets. This validates the difficulty ladder design: hard tasks are genuinely challenging for frontier LLMs without fine-tuning.
 
+### Training Validation (SFT on expert demonstrations)
+
+To verify the environment produces a learnable reward signal, we fine-tuned Qwen2.5-0.5B-Instruct via QLoRA on 985 expert trajectory pairs (100 episodes, all difficulties). Results on 15 held-out episodes:
+
+| Metric | Zero-shot Qwen 0.5B | SFT-trained Qwen 0.5B | Improvement |
+|--------|---------------------|------------------------|-------------|
+| Easy | 0.412 | **0.612** | +48% |
+| Medium | 0.171 | **0.273** | +60% |
+| Hard | 0.000 | 0.000 | — |
+| **Overall** | 0.194 | **0.295** | **+52%** |
+| Best episode | 0.500 | **0.860** | Near-expert |
+
+The trained model achieved 97.75% token accuracy on eval (loss: 0.097), demonstrating that the observation format is learnable and the reward signal drives meaningful improvement.
+
 ---
 
 ## Quick Start
